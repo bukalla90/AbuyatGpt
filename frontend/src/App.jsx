@@ -10,7 +10,7 @@ import './App.css';
 
 
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://abuyatgpt.onrender.com/api';
 
 
 
