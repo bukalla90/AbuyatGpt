@@ -1,0 +1,217 @@
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+
+import Sidebar from './components/Sidebar/Sidebar';
+import ChatHeader from './components/ChatHeader/ChatHeader';
+import MessageList from './components/MessageList/MessageList';
+import ChatInput from './components/ChatInput/ChatInput';
+
+import './App.css';
+
+
+
+const API_BASE_URL = 'http://localhost:3000/api';
+
+
+
+function App() {
+
+  const [conversations, setConversations] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const messagesEndRef = useRef(null);
+
+
+
+  // scroll to bottom
+  const scrollToBottom = () => {
+
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+    });
+
+  };
+
+
+
+  // fetch conversations on mount
+  useEffect(() => {
+
+    fetchConversations();
+
+  }, []);
+
+
+
+
+  // auto scroll
+  useEffect(() => {
+
+    scrollToBottom();
+
+  }, [conversations, isLoading]);
+
+
+
+  // fetch all conversations
+  const fetchConversations = async () => {
+
+    try {
+
+      const response = await axios.get(
+        `${API_BASE_URL}/chat/conversations`
+      );
+
+
+
+      if (response.data.success) {
+
+        setConversations(response.data.data);
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        'Error fetching conversations:',
+        error
+      );
+
+    }
+  };
+
+
+
+  // send message
+  const handleSendMessage = async (question) => {
+
+    // optimistic user message
+    const tempUserMessage = {
+      id: Date.now(),
+      role: 'user',
+      content: question,
+    };
+
+
+
+    setConversations((prev) => [
+      ...prev,
+      tempUserMessage,
+    ]);
+
+
+
+    setIsLoading(true);
+
+
+
+    try {
+
+      const response = await axios.post(
+        `${API_BASE_URL}/chat/conversations`,
+        {
+          question,
+        }
+      );
+
+
+
+      if (response.data.success) {
+
+        const {
+          userMessage,
+          assistantMessage,
+        } = response.data.data;
+
+
+
+        // replace temp message
+        setConversations((prev) => {
+
+          const filtered = prev.filter(
+            (msg) => msg.id !== tempUserMessage.id
+          );
+
+
+
+          return [
+            ...filtered,
+            userMessage,
+            assistantMessage,
+          ];
+        });
+      }
+
+    } catch (error) {
+
+      console.error(
+        'Error posting conversation:',
+        error
+      );
+
+
+
+      const errorMessage =
+        error.response?.data?.message ||
+        'There was an error generating a response.';
+
+
+
+      const errorConversation = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: errorMessage,
+      };
+
+
+
+      setConversations((prev) => [
+        ...prev,
+        errorConversation,
+      ]);
+
+    } finally {
+
+      setIsLoading(false);
+
+    }
+  };
+
+
+
+  return (
+    <div className='app'>
+
+      <Sidebar />
+
+
+
+      <main className='chat'>
+
+        <ChatHeader />
+
+
+
+        <MessageList
+          conversations={conversations}
+          isLoading={isLoading}
+          messagesEndRef={messagesEndRef}
+        />
+
+
+
+        <ChatInput
+          handleSendMessage={handleSendMessage}
+          isLoading={isLoading}
+        />
+
+      </main>
+
+    </div>
+  );
+}
+
+
+
+export default App;
