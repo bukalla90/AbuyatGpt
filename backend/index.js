@@ -67,14 +67,11 @@ async function startServer() {
 
         });
 
-    } catch (error) {
-
-        console.log(
-            "Error starting server:",
-            error.message
-        );
-
-    }
+    } 
+   catch (error) {
+    console.error("Error starting server:");
+    console.error(error);
+}
 }
 
 
