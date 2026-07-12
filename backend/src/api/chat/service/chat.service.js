@@ -73,15 +73,25 @@ const generateAssistantAnswer = async ({
 
 
         // create chat
-        const chat = geminiClient.chats.create({
-            model: GEMINI_MODEL,
+       const SYSTEM_PROMPT = `
+You are a helpfull doctor assistant.
 
-            history: formattedHistory,
+Rules:
+- Answer clearly.
+- Be concise.
+- If you don't know something, say so.
+-if you are asked other than health related say i do not know it
+- Use Markdown formatting.
+`;
 
-            config: {
-                maxOutputTokens: 100,
-            },
-        });
+const chat = geminiClient.chats.create({
+    model: GEMINI_MODEL,
+    history: formattedHistory,
+    config: {
+        systemInstruction: SYSTEM_PROMPT,
+        maxOutputTokens: 100,
+    },
+});
 
 
 
