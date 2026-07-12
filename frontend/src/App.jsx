@@ -12,6 +12,17 @@ import './App.css';
 
 const API_BASE_URL = 'https://abuyatgpt.onrender.com/api';
 
+const createId = () => crypto.randomUUID();
+
+const getUserId = () => {
+  const storedUserId = localStorage.getItem('abuyat-user-id');
+
+  if (storedUserId) return storedUserId;
+
+  const userId = createId();
+  localStorage.setItem('abuyat-user-id', userId);
+  return userId;
+};
 
 
 function App() {
@@ -19,6 +30,11 @@ function App() {
   const [conversations, setConversations] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // A new session is deliberately created on each page load/reload.
+  const [chatId, setChatId] = useState(() => createId());
+
+  const [userId] = useState(() => getUserId());
 
   const messagesEndRef = useRef(null);
 
@@ -35,15 +51,6 @@ function App() {
 
 
 
-  // fetch conversations on mount
-  useEffect(() => {
-
-    fetchConversations();
-
-  }, []);
-
-
-
 
   // auto scroll
   useEffect(() => {
@@ -54,31 +61,9 @@ function App() {
 
 
 
-  // fetch all conversations
-  const fetchConversations = async () => {
-
-    try {
-
-      const response = await axios.get(
-        `${API_BASE_URL}/chat/conversations`
-      );
-
-
-
-      if (response.data.success) {
-
-        setConversations(response.data.data);
-
-      }
-
-    } catch (error) {
-
-      console.error(
-        'Error fetching conversations:',
-        error
-      );
-
-    }
+  const handleNewChat = () => {
+    setChatId(createId());
+    setConversations([]);
   };
 
 
@@ -112,6 +97,8 @@ function App() {
         `${API_BASE_URL}/chat/conversations`,
         {
           question,
+          chatId,
+          userId,
         }
       );
 
@@ -183,7 +170,7 @@ function App() {
   return (
     <div className='app'>
 
-      <Sidebar />
+      <Sidebar onNewChat={handleNewChat} />
 
 
 

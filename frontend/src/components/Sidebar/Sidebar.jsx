@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
-export default function Sidebar() {
+export default function Sidebar({ onNewChat }) {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.header}>
@@ -25,10 +25,10 @@ export default function Sidebar() {
       </div>
 
       <nav className={styles.nav}>
-        <a href='#' className={styles.item}>
+        <button type='button' className={styles.item} onClick={onNewChat}>
           <MessageSquare size={18} />
           <span>New chat</span>
-        </a>
+        </button>
         <a href='#' className={styles.item}>
           <Search size={18} />
           <span>Search chats</span>

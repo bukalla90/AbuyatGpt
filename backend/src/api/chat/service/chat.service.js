@@ -1,6 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import db from "../../../../db/db.config.js";
+import { randomUUID } from "node:crypto";
 
 
 
@@ -16,7 +17,40 @@ const geminiClient = new GoogleGenAI({
 
 
 // get conversations
-export async function getConversationRows(limit = 5) {
+const UUID_PATTERN =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const assertUuid = (value, fieldName) => {
+    if (!value || !UUID_PATTERN.test(value)) {
+        const error = new Error(`${fieldName} must be a valid UUID`);
+        error.statusCode = 400;
+        throw error;
+    }
+};
+
+const ensureChatSession = async (chatId, userId) => {
+    assertUuid(chatId, "chatId");
+    assertUuid(userId, "userId");
+
+    const { rows } = await db.query(
+        `
+        INSERT INTO chat_sessions (id, user_id)
+        VALUES ($1, $2)
+        ON CONFLICT (id) DO UPDATE SET id = chat_sessions.id
+        RETURNING id, user_id
+        `,
+        [chatId, userId]
+    );
+
+    if (rows[0].user_id !== userId) {
+        const error = new Error("This chat belongs to another user");
+        error.statusCode = 403;
+        throw error;
+    }
+};
+
+// get messages for one chat only
+export async function getConversationRows(chatId, userId, limit = 50) {
 
     try {
 
@@ -27,18 +61,24 @@ export async function getConversationRows(limit = 5) {
             normalizedLimit = 5;
         }
 
-        if (normalizedLimit > 20) {
-            normalizedLimit = 20;
+        if (normalizedLimit > 100) {
+            normalizedLimit = 100;
         }
 
         const query = `
-            SELECT id, role, content, token_count, created_at
+            SELECT c.id, c.role, c.content, c.token_count, c.created_at
             FROM conversations
-            ORDER BY created_at ASC
-            LIMIT $1
+            c
+            INNER JOIN chat_sessions s ON s.id = c.chat_id
+            WHERE c.chat_id = $1 AND s.user_id = $2
+            ORDER BY c.created_at ASC, c.id ASC
+            LIMIT $3
         `;
 
-        const { rows } = await db.query(query, [normalizedLimit]);
+        assertUuid(chatId, "chatId");
+        assertUuid(userId, "userId");
+
+        const { rows } = await db.query(query, [chatId, userId, normalizedLimit]);
 
         return rows;
 
@@ -119,7 +159,7 @@ const chat = geminiClient.chats.create({
 
 
 // create conversation
-export async function createConversationService(question) {
+export async function createConversationService(question, chatId, userId) {
 
     try {
 
@@ -136,11 +176,14 @@ export async function createConversationService(question) {
 
 
         const trimmedQuestion = question.trim();
+        const resolvedChatId = chatId || randomUUID();
+
+        await ensureChatSession(resolvedChatId, userId);
 
 
 
         // get previous history
-        const historyRows = await getConversationRows(50);
+        const historyRows = await getConversationRows(resolvedChatId, userId, 50);
 
 
 
@@ -148,11 +191,11 @@ export async function createConversationService(question) {
         const userMessageResult = await db.query(
             `
             INSERT INTO conversations
-            (role, content)
-            VALUES ($1, $2)
+            (chat_id, role, content)
+            VALUES ($1, $2, $3)
             RETURNING id
             `,
-            ["user", trimmedQuestion]
+            [resolvedChatId, "user", trimmedQuestion]
         );
 
 
@@ -170,11 +213,12 @@ export async function createConversationService(question) {
         const assistantMessageResult = await db.query(
             `
             INSERT INTO conversations
-            (role, content, token_count)
-            VALUES ($1, $2, $3)
+            (chat_id, role, content, token_count)
+            VALUES ($1, $2, $3, $4)
             RETURNING id
             `,
             [
+                resolvedChatId,
                 "assistant",
                 assistantAnswer.text,
                 assistantAnswer.totalToken,
@@ -185,6 +229,7 @@ export async function createConversationService(question) {
 
         // return final response
         return {
+            chatId: resolvedChatId,
             userMessage: {
                 id: userMessageResult.rows[0].id,
                 role: "user",
@@ -206,7 +251,7 @@ export async function createConversationService(question) {
     }
 }
 
-export async function getMessageById(messageId) {
+export async function getMessageById(messageId, chatId, userId) {
 
     try {
 
@@ -228,12 +273,16 @@ export async function getMessageById(messageId) {
                 content,
                 token_count,
                 created_at
-            FROM conversations
-            WHERE id = $1
+            FROM conversations c
+            INNER JOIN chat_sessions s ON s.id = c.chat_id
+            WHERE c.id = $1 AND c.chat_id = $2 AND s.user_id = $3
             LIMIT 1
         `;
 
-        const { rows } = await db.query(query, [normalizedId]);
+        assertUuid(chatId, "chatId");
+        assertUuid(userId, "userId");
+
+        const { rows } = await db.query(query, [normalizedId, chatId, userId]);
 
 
 

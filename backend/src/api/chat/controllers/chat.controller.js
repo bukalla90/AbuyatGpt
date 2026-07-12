@@ -13,10 +13,10 @@ export async function createConversationController(
 
     try {
 
-        const { question } = req.body;
+        const { question, chatId, userId } = req.body;
 
         const result =
-            await createConversationService(question);
+            await createConversationService(question, chatId, userId);
 
         res.status(201).json({
             success: true,
@@ -42,7 +42,11 @@ export async function getConversationController(
     try {
 
         const result =
-            await getConversationRows(100);
+            await getConversationRows(
+                req.query.chatId,
+                req.query.userId,
+                100
+            );
 
         res.status(200).json({
             success: true,
