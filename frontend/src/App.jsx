@@ -24,6 +24,16 @@ const getUserId = () => {
   return userId;
 };
 
+const getActiveChatId = () => {
+  const storedChatId = localStorage.getItem('abuyat-active-chat-id');
+
+  if (storedChatId) return storedChatId;
+
+  const chatId = createId();
+  localStorage.setItem('abuyat-active-chat-id', chatId);
+  return chatId;
+};
+
 
 function App() {
 
@@ -31,8 +41,8 @@ function App() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // A new session is deliberately created on each page load/reload.
-  const [chatId, setChatId] = useState(() => createId());
+  // Keep the selected chat after a page refresh.
+  const [chatId, setChatId] = useState(() => getActiveChatId());
 
   const [userId] = useState(() => getUserId());
 
@@ -60,9 +70,41 @@ function App() {
   }, [conversations, isLoading]);
 
 
+  // Load the saved chat whenever the page opens or a new chat is selected.
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchConversations = async () => {
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/chat/conversations`,
+          { params: { chatId, userId } }
+        );
+
+        if (!cancelled && response.data.success) {
+          setConversations(response.data.data);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error fetching conversations:', error);
+          setConversations([]);
+        }
+      }
+    };
+
+    fetchConversations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [chatId, userId]);
+
+
 
   const handleNewChat = () => {
-    setChatId(createId());
+    const nextChatId = createId();
+    localStorage.setItem('abuyat-active-chat-id', nextChatId);
+    setChatId(nextChatId);
     setConversations([]);
   };
 
