@@ -16,9 +16,9 @@ export default function Sidebar({ onNewChat, isOpen, onClose }) {
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <div className={styles.header}>
         <div className={styles.logo}>
-          <div className={styles.iconBtn}>
+          <button type='button' className={styles.iconBtn} onClick={onClose} aria-label='Close navigation'>
             <PanelLeftClose size={20} />
-          </div>
+          </button>
         </div>
         <button className={styles.iconBtn} onClick={onClose} aria-label='Close navigation'>
           <X size={20} />

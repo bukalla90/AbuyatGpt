@@ -51,6 +51,10 @@
   padding: 12px 0;
 }
 
+.spinner { color: var(--text-secondary); animation: spin 1s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .loadingDot {
   width: 6px;
   height: 6px;

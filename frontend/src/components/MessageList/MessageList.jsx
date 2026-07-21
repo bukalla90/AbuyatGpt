@@ -1,4 +1,4 @@
-import { Bot } from 'lucide-react';
+import { Bot, LoaderCircle } from 'lucide-react';
 import ChatMessage from '../ChatMessage/ChatMessage';
 import styles from './MessageList.module.css';
 
@@ -23,9 +23,8 @@ export default function MessageList({
             <Bot size={18} color='white' />
           </div>
           <div className={styles.loading}>
-            <div className={styles.loadingDot}></div>
-            <div className={styles.loadingDot}></div>
-            <div className={styles.loadingDot}></div>
+            <LoaderCircle className={styles.spinner} size={20} aria-label='Generating response' />
+            <span>Thinking</span>
           </div>
         </div>
       )}
