@@ -7,6 +7,7 @@ import {
   Code2,
   FolderKanban,
   PanelLeftClose,
+  X,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
@@ -20,7 +21,7 @@ export default function Sidebar({ onNewChat, isOpen, onClose }) {
           </div>
         </div>
         <button className={styles.iconBtn} onClick={onClose} aria-label='Close navigation'>
-          <MessageSquare size={20} />
+          <X size={20} />
         </button>
       </div>
 

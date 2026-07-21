@@ -44,6 +44,8 @@
   border-radius: 6px;
 }
 
+.closeBtn { display: none; background: none; border: 0; color: var(--text-secondary); cursor: pointer; padding: 4px; }
+
 .iconBtn:hover {
   background-color: var(--bg-hover);
   color: var(--text-primary);
@@ -124,3 +126,5 @@
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+@media (max-width: 720px) { .closeBtn { display: inline-flex; } }

@@ -3,6 +3,10 @@
   max-width: var(--content-width);
   margin: 0 auto;
   width: 100%;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background: linear-gradient(to bottom, transparent, var(--bg-main) 16px);
 }
 
 .form {
@@ -23,7 +27,12 @@
   justify-content: center;
   padding: 8px;
   cursor: pointer;
+  background: transparent;
+  border: 0;
 }
+
+.listening { color: #ef4444; animation: voicePulse 1.2s infinite; }
+@keyframes voicePulse { 50% { opacity: .45; transform: scale(1.08); } }
 
 .input {
   flex: 1;
@@ -37,7 +46,11 @@
   font-family: inherit;
 }
 
-@media (max-width: 520px) { .container { padding-inline: 10px; } .icon { padding: 6px; } .input { font-size: 15px; } }
+@media (max-width: 520px) {
+  .container { padding: 20px 10px max(10px, env(safe-area-inset-bottom)); }
+  .icon { padding: 6px; }
+  .input { font-size: 16px; }
+}
 
 .input::placeholder {
   color: var(--text-secondary);

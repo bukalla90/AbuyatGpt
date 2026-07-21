@@ -17,6 +17,7 @@
   gap: 8px;
   cursor: pointer;
 }
+.brandMark { color: var(--text-primary); font-size: 20px; line-height: 1; }
 
 .right {
   display: flex;

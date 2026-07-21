@@ -22,7 +22,7 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-main);
   color: var(--text-primary);
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   min-width: 320px;
 }
@@ -30,8 +30,12 @@ body {
 /* App Layout */
 .app {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
+}
+
+@supports not (height: 100dvh) {
+  body, .app { height: 100vh; }
 }
 
 /* Main Chat Area */

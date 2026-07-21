@@ -8,7 +8,7 @@ export default function ChatHeader({ onMenu }) {
         <Menu size={21} />
       </button>
       <div className={styles.left}>
-        <span>ChatGPT</span>
+        <span className={styles.brandMark}>✦</span><span>ChatGPT</span>
         <ChevronDown size={16} />
       </div>
       <div className={styles.right}>

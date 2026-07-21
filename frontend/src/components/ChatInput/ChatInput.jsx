@@ -1,9 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Plus, Mic, ArrowUp } from 'lucide-react';
 import styles from './ChatInput.module.css';
 
 export default function ChatInput({ handleSendMessage, isLoading }) {
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  useEffect(() => () => recognitionRef.current?.stop(), []);
+  const toggleVoice = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    if (isListening) { recognitionRef.current?.stop(); return; }
+    const recognition = new SpeechRecognition();
+    recognition.lang = navigator.language || 'en-US';
+    recognition.interimResults = true;
+    recognition.onresult = event => setInput(Array.from(event.results).map(result => result[0].transcript).join(''));
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -38,7 +55,7 @@ export default function ChatInput({ handleSendMessage, isLoading }) {
         ) : (
           <>
             <div className={styles.icon}>
-              <Mic size={20} />
+              <button type='button' className={`${styles.icon} ${isListening ? styles.listening : ''}`} onClick={toggleVoice} aria-label='Use voice input'><Mic size={20} /></button>
             </div>
           </>
         )}
