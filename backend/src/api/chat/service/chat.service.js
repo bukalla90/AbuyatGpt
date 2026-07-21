@@ -164,12 +164,18 @@ export async function createConversationService(question, chatId, userId) {
     try {
 
         // validation
-        if (!question || !question.trim()) {
+        if (typeof question !== 'string' || !question.trim()) {
 
             const error = new Error("Question is required");
 
             error.statusCode = 400;
 
+            throw error;
+        }
+
+        if (question.length > 10000) {
+            const error = new Error("Question is too long");
+            error.statusCode = 413;
             throw error;
         }
 

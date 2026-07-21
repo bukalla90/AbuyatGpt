@@ -10,7 +10,7 @@ import './App.css';
 
 
 
-const API_BASE_URL = 'https://abuyatgpt.onrender.com/api';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://abuyatgpt.onrender.com/api').replace(/\/$/, '');
 
 const createId = () => crypto.randomUUID();
 
@@ -45,6 +45,7 @@ function App() {
   const [chatId, setChatId] = useState(() => getActiveChatId());
 
   const [userId] = useState(() => getUserId());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -106,6 +107,7 @@ function App() {
     localStorage.setItem('abuyat-active-chat-id', nextChatId);
     setChatId(nextChatId);
     setConversations([]);
+    setSidebarOpen(false);
   };
 
 
@@ -212,13 +214,13 @@ function App() {
   return (
     <div className='app'>
 
-      <Sidebar onNewChat={handleNewChat} />
+      <Sidebar onNewChat={handleNewChat} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
 
 
       <main className='chat'>
 
-        <ChatHeader />
+        <ChatHeader onMenu={() => setSidebarOpen(true)} />
 
 
 

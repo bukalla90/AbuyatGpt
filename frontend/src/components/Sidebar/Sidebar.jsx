@@ -10,16 +10,16 @@ import {
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
-export default function Sidebar({ onNewChat }) {
+export default function Sidebar({ onNewChat, isOpen, onClose }) {
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <div className={styles.header}>
         <div className={styles.logo}>
           <div className={styles.iconBtn}>
             <PanelLeftClose size={20} />
           </div>
         </div>
-        <button className={styles.iconBtn}>
+        <button className={styles.iconBtn} onClick={onClose} aria-label='Close navigation'>
           <MessageSquare size={20} />
         </button>
       </div>

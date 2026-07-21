@@ -5,12 +5,12 @@ export const errorHandler = (
     next
 ) => {
 
+    if (res.headersSent) return next(err);
+
     const customError = {
         statusCode: err.statusCode || 500,
 
-        message:
-            err.message ||
-            "Something went wrong",
+        message: err.statusCode ? err.message : "Something went wrong",
     };
 
 

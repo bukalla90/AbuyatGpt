@@ -1,7 +1,7 @@
 .message {
   display: flex;
-  padding: 0 24px;
-  max-width: 800px;
+  padding: 0 clamp(16px, 5vw, 32px);
+  max-width: var(--content-width);
   margin: 0 auto;
   width: 100%;
   gap: 16px;
@@ -36,7 +36,14 @@
   font-size: 15px;
   line-height: 1.6;
   max-width: 80%;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+@media (max-width: 520px) {
+  .message { gap: 10px; }
+  .avatar { width: 28px; height: 28px; }
+  .content { max-width: calc(100% - 38px); font-size: 14px; padding: 10px 12px; }
 }
 
 .message.assistant .content {

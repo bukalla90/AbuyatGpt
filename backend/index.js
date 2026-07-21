@@ -18,12 +18,19 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors())
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+    : true;
+app.use(cors({ origin: allowedOrigins }));
 
 
 
 // middleware
 app.use(express.json());
+
+app.get('/health', (_req, res) => {
+    res.status(200).json({ success: true, status: 'ok' });
+});
 
 
 
